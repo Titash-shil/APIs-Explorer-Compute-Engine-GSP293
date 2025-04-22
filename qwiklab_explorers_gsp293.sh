@@ -1,57 +1,75 @@
-#!/bin/bash
-
-# Define color variables
-BLACK_TEXT=$'\033[0;90m'
-RED_TEXT=$'\033[0;91m'
-GREEN_TEXT=$'\033[0;92m'
-YELLOW_TEXT=$'\033[0;93m'
-BLUE_TEXT=$'\033[0;94m'
-MAGENTA_TEXT=$'\033[0;95m'
-CYAN_TEXT=$'\033[0;96m'
-WHITE_TEXT=$'\033[0;97m'
-
-NO_COLOR=$'\033[0m'
-RESET_FORMAT=$'\033[0m'
-
-# Define text formatting variables
-BOLD_TEXT=$'\033[1m'
-UNDERLINE_TEXT=$'\033[4m'
-
-clear
-
-
-export REGION=$(gcloud compute project-info describe \
---format="value(commonInstanceMetadata.items[google-compute-default-region])")
-
-# Fetching zone
 export ZONE=$(gcloud compute project-info describe \
---format="value(commonInstanceMetadata.items[google-compute-default-zone])")
+--format="value(commonInstanceMetadata.items[google-compute-default-zone])") 
 
-# Fetching project ID
-PROJECT_ID=`gcloud config get-value project`
+gcloud services enable compute.googleapis.com
 
-# Fetching project number
-export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+sleep 20
 
-# Instruction for instance creation
 
-# Creating instance
-gcloud compute instances create instance-1 \
-  --project=$PROJECT_ID \
-  --zone=$ZONE \
-  --machine-type=n1-standard-1 \
-  --image-family=debian-11 \
-  --image-project=debian-cloud \
-  --boot-disk-type=pd-standard \
-  --boot-disk-device-name=instance-1
+curl -X POST "https://compute.googleapis.com/compute/v1/projects/$DEVSHELL_PROJECT_ID/zones/$ZONE/instances" \
+  -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"name\": \"instance-1\",
+    \"machineType\": \"zones/$ZONE/machineTypes/n1-standard-1\",
+    \"networkInterfaces\": [{}],
+    \"disks\": [{
+      \"type\": \"PERSISTENT\",
+      \"boot\": true,
+      \"initializeParams\": {
+        \"sourceImage\": \"projects/debian-cloud/global/images/family/debian-11\"
+      }
+    }]
+  }"
 
-# Instruction for instance deletion
+function check_progress {
+    while true; do
+        echo
+        echo -n "${BOLD}${YELLOW}check your progress for task 2 before proceeding further, then type Y and hit Enter ? (Y/N): ${RESET}"
+        read -r user_input
+        if [[ "$user_input" == "Y" || "$user_input" == "y" ]]; then
+            echo
+            echo "${BOLD}${GREEN}ok now go back and check rest of progress${RESET}"
+            echo
+            break
+        elif [[ "$user_input" == "N" || "$user_input" == "n" ]]; then
+            echo
+            echo "${BOLD}${RED}cant proceed further${RESET}"
+        else
+            echo
+            echo "${BOLD}${MAGENTA}Invalid input. Please enter Y or N.${RESET}"
+        fi
+    done
+}
 
-# Deleting instance
-gcloud compute instances delete instance-1 \
-  --project=$PROJECT_ID \
-  --zone=$ZONE --quiet
 
-# Completion message
+check_progress
 
-echo -e "${BLUE_TEXT}${BOLD_TEXT}Subscribe my Channel (QwikLab Explorers):${RESET_FORMAT} ${GREEN_TEXT}${BOLD_TEXT}https://www.youtube.com/@qwiklabexplorers${RESET_FORMAT}"
+
+curl -X DELETE \
+  -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
+  -H "Content-Type: application/json" \
+  "https://compute.googleapis.com/compute/v1/projects/$DEVSHELL_PROJECT_ID/zones/$ZONE/instances/instance-1"
+
+
+
+echo -e "\n" 
+
+cd
+
+remove_files() {
+    # Loop through all files in the current directory
+    for file in *; do
+        # Check if the file name starts with "gsp", "arc", or "shell"
+        if [[ "$file" == gsp* || "$file" == arc* || "$file" == shell* ]]; then
+            # Check if it's a regular file (not a directory)
+            if [[ -f "$file" ]]; then
+                # Remove the file and echo the file name
+                rm "$file"
+                echo "File removed: $file"
+            fi
+        fi
+    done
+}
+
+remove_files
