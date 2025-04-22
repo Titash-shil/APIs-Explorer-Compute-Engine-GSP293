@@ -10,11 +10,11 @@
  - ### Copy & Run the Commands in Cloud Shell Terminal :
 
 ```
-curl -LO raw.githubusercontent.com/Titash-shil/HTTP-Google-Cloud-Run-Functions-in-Go-GSP602/refs/heads/main/qwiklab_explorers_gsp602.sh
+curl -LO raw.githubusercontent.com/Titash-shil/APIs-Explorer-Compute-Engine-GSP293/refs/heads/main/qwiklab_explorers_gsp293.sh
 
-sudo chmod +x qwiklab_explorers_gsp602.sh
+sudo chmod +x qwiklab_explorers_gsp293.sh
 
-./qwiklab_explorers_gsp602.sh
+./qwiklab_explorers_gsp293.sh
 ```
 
 - ### Follow Next Steps from the video carefully
